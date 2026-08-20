@@ -172,6 +172,7 @@
                 <input type="checkbox" id="auto-swap-toggle" checked> Auto-swap role on send
             </div>
             <button style="padding: 8px 14px; cursor: pointer;" onclick="exportTranscript()">Download Script</button>
+            <button style="padding: 8px 14px; cursor: pointer; background-color: #dc3545; color: white; border: none; border-radius: 4px; margin-left: 10px;" onclick="clearChat()">Clear Chat</button>
         </div>
         <div class="chat-history-body" id="chat-messages-box">
             <div style="text-align: center; color: #718096; font-size: 0.8rem; margin: 10px 0;">
@@ -261,6 +262,12 @@
             downloadLink.href = URL.createObjectURL(dataBlob);
             downloadLink.download = 'Chat-Transcript.txt';
             downloadLink.click();
+        }
+        function clearChat() {
+            var chatBox = document.getElementById('chat-messages-box');
+            if (chatBox) {
+                chatBox.innerHTML = '<div style="text-align: center; color: #718096; font-size: 0.8rem; margin: 10px 0;">Simulation Active. EverAssist AI extension can read DOM classes.</div>';
+            }
         }
     </script>
 </body>
