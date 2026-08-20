@@ -99,7 +99,7 @@
             align-self: flex-start;
         }
         .message-bubble-row.agent-align {
-            align-self: flex-start;
+            align-self: flex-end;
         }
         .sender-tag {
             font-size: 0.75rem;
@@ -209,36 +209,55 @@
             inputField.focus();
         }
 
-        function sendMessage() {
+            function sendMessage() {
             var text = inputField.value.trim();
             if (!text) return;
-            var timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            
+            // Generate real-time custom Date and Time strings
+            var now = new Date();
+            var dateStr = (now.getMonth() + 1) + '/' + now.getDate() + '/' + now.getFullYear();
+            var timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            
             var alignmentClass = (currentRole === 'Customer') ? 'customer-align' : 'agent-align';
             var messageRow = document.createElement('div');
             messageRow.className = 'message-bubble-row ' + alignmentClass;
             messageRow.setAttribute('aria-label', currentRole + ' Message');
-            var senderTag = document.createElement('span');
-            senderTag.className = 'sender-tag';
-            senderTag.innerText = (currentRole === 'Customer') ? 'CUSTOMER' : 'AGENT';
+            
+            // The text bubble containing the message
             var bubble = document.createElement('div');
             bubble.className = 'text-bubble';
             bubble.innerText = text;
-            var timestamp = document.createElement('span');
+            
+            // New metadata row layout placed UNDERNEATH the chat bubble
+            var timestamp = document.createElement('div');
             timestamp.className = 'timestamp-span';
-            timestamp.innerText = timeStr;
-            messageRow.appendChild(senderTag);
+            timestamp.style.fontSize = '0.75rem';
+            timestamp.style.color = '#718096';
+            timestamp.style.marginTop = '4px';
+            timestamp.style.display = 'block';
+            // Formats as: "Guest • 8/20/2026, 11:19:55 PM" (or Agent)
+            var displayName = (currentRole === 'Customer') ? 'Guest' : 'Agent';
+            timestamp.innerText = displayName + ' • ' + dateStr + ', ' + timeStr;
+            
+            // We append the bubble first, then the timestamp underneath it
             messageRow.appendChild(bubble);
             messageRow.appendChild(timestamp);
+            
             chatBox.appendChild(messageRow);
             chatBox.scrollTop = chatBox.scrollHeight;
             inputField.value = '';
+            
             if (autoSwap.checked) {
                 if (currentRole === 'Customer') { setRole('Agent'); } else { setRole('Customer'); }
             }
         }
 
-        function handleKeyPress(e) {
-            if (e.key === 'Enter') { sendMessage(); }
+        function handleKeyPress(event) {
+            // Allows Shift+Enter for line breaks in textarea, but Enter alone sends
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendMessage();
+            }
         }
 
         function loadPreset(role, text) {
