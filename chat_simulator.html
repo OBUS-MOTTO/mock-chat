@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Service Mock Chat Simulator</title>
+    <style>
+        html, body, div, h2, button, input, span {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: sans-serif;
+        }
+        body {
+            background-color: #f4f6f9;
+            color: #2d3748;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+        .sidebar {
+            width: 280px;
+            background-color: #ffffff;
+            border-right: 1px solid #e0e4ec;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+        }
+        .sidebar h2 {
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+        }
+        .preset-btn {
+            background: none;
+            border: 1px solid #e0e4ec;
+            border-radius: 6px;
+            padding: 10px;
+            text-align: left;
+            margin-bottom: 10px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        .main-chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            background-color: #ffffff;
+        }
+        .control-panel {
+            padding: 15px 20px;
+            border-bottom: 1px solid #e0e4ec;
+            background-color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .role-selector {
+            display: flex;
+            gap: 10px;
+            background-color: #edf2f7;
+            padding: 5px;
+            border-radius: 8px;
+        }
+        .role-btn {
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .role-btn.active-customer {
+            background-color: #3182ce;
+            color: white;
+        }
+        .role-btn.active-agent {
+            background-color: #38a169;
+            color: white;
+        }
+        .role-btn.inactive {
+            background: none;
+            color: #718096;
+        }
+        .chat-history-body {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background-color: #f7fafc;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .message-bubble-row {
+            display: flex;
+            flex-direction: column;
+            max-width: 75%;
+        }
+        .message-bubble-row.customer-align {
+            align-self: flex-start;
+        }
+        .message-bubble-row.agent-align {
+            align-self: flex-end;
+        }
+        .sender-tag {
+            font-size: 0.75rem;
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+        .customer-align .sender-tag { color: #3182ce; }
+        .agent-align .sender-tag { color: #38a169; }
+        .text-bubble {
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            line-height: 1.4;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+        .customer-align .text-bubble {
+            background-color: #ebf8ff;
+            color: #2b6cb0;
+        }
+        .agent-align .text-bubble {
+            background-color: #f0fff4;
+            color: #276749;
+        }
+        .timestamp-span {
+            font-size: 0.7rem;
+            color: #718096;
+            margin-top: 3px;
+        }
+        .input-container {
+            padding: 20px;
+            border-top: 1px solid #e0e4ec;
+            background-color: #ffffff;
+            display: flex;
+            gap: 12px;
+        }
+        #message-input-field {
+            flex: 1;
+            padding: 14px;
+            border: 1px solid #e0e4ec;
+            border-radius: 8px;
+            outline: none;
+        }
+        .send-btn {
+            padding: 0 24px;
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .send-btn.customer-theme { background-color: #3182ce; }
+        .send-btn.agent-theme { background-color: #38a169; }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <h2>Practice Scenarios</h2>
+        <button class="preset-btn" onclick="loadPreset('Customer', 'Hi, I received my monthly statement and there is an unexpected $45 charge. Can you explain what this is for?')">Billing Discrepancy</button>
+        <button class="preset-btn" onclick="loadPreset('Customer', 'Hello, my order #10844 was supposed to arrive two days ago but the tracking status hasn\'t updated. Where is my package?')">Delayed Delivery</button>
+        <button class="preset-btn" onclick="loadPreset('Customer', 'I am trying to log into my corporate dashboard but it says my account is locked due to multiple password attempts. I need immediate access.')">Locked Account</button>
+        <button class="preset-btn" onclick="loadPreset('Customer', 'I purchased your premium software license yesterday but it turns out my operating system is unsupported. I would like to request a full refund.')">Refund Request</button>
+    </div>
+    <div class="main-chat-container">
+        <div class="control-panel">
+            <div class="role-selector">
+                <button id="role-customer-btn" class="role-btn active-customer" onclick="setRole('Customer')">Typing as: Customer</button>
+                <button id="role-agent-btn" class="role-btn inactive" onclick="setRole('Agent')">Typing as: Agent</button>
+            </div>
+            <div style="font-size: 0.85rem; color: #718096;">
+                <input type="checkbox" id="auto-swap-toggle" checked> Auto-swap role on send
+            </div>
+            <button style="padding: 8px 14px; cursor: pointer;" onclick="exportTranscript()">Download Script</button>
+        </div>
+        <div class="chat-history-body" id="chat-messages-box">
+            <div style="text-align: center; color: #718096; font-size: 0.8rem; margin: 10px 0;">
+                Simulation Active. EverAssist AI extension can read DOM classes.
+            </div>
+        </div>
+        <div class="input-container">
+            <input type="text" id="message-input-field" placeholder="Type customer message..." onkeypress="handleKeyPress(event)">
+            <button id="submit-send-btn" class="send-btn customer-theme" onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+    <script>
+        var currentRole = 'Customer';
+        var chatBox = document.getElementById('chat-messages-box');
+        var inputField = document.getElementById('message-input-field');
+        var sendBtn = document.getElementById('submit-send-btn');
+        var custBtn = document.getElementById('role-customer-btn');
+        var agentBtn = document.getElementById('role-agent-btn');
+        var autoSwap = document.getElementById('auto-swap-toggle');
+
+        function setRole(role) {
+            currentRole = role;
+            if (role === 'Customer') {
+                custBtn.className = 'role-btn active-customer';
+                agentBtn.className = 'role-btn inactive';
+                sendBtn.className = 'send-btn customer-theme';
+                inputField.placeholder = 'Type customer message...';
+            } else {
+                custBtn.className = 'role-btn inactive';
+                agentBtn.className = 'role-btn active-agent';
+                sendBtn.className = 'send-btn agent-theme';
+                inputField.placeholder = 'Type agent response...';
+            }
+            inputField.focus();
+        }
+
+        function sendMessage() {
+            var text = inputField.value.trim();
+            if (!text) return;
+            var timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            var alignmentClass = (currentRole === 'Customer') ? 'customer-align' : 'agent-align';
+            var messageRow = document.createElement('div');
+            messageRow.className = 'message-bubble-row ' + alignmentClass;
+            messageRow.setAttribute('aria-label', currentRole + ' Message');
+            var senderTag = document.createElement('span');
+            senderTag.className = 'sender-tag';
+            senderTag.innerText = (currentRole === 'Customer') ? 'CUSTOMER' : 'AGENT';
+            var bubble = document.createElement('div');
+            bubble.className = 'text-bubble';
+            bubble.innerText = text;
+            var timestamp = document.createElement('span');
+            timestamp.className = 'timestamp-span';
+            timestamp.innerText = timeStr;
+            messageRow.appendChild(senderTag);
+            messageRow.appendChild(bubble);
+            messageRow.appendChild(timestamp);
+            chatBox.appendChild(messageRow);
+            chatBox.scrollTop = chatBox.scrollHeight;
+            inputField.value = '';
+            if (autoSwap.checked) {
+                if (currentRole === 'Customer') { setRole('Agent'); } else { setRole('Customer'); }
+            }
+        }
+
+        function handleKeyPress(e) {
+            if (e.key === 'Enter') { sendMessage(); }
+        }
+
+        function loadPreset(role, text) {
+            setRole(role);
+            inputField.value = text;
+            inputField.focus();
+        }
+
+        function exportTranscript() {
+            var rows = document.querySelectorAll('.message-bubble-row');
+            var scriptArray = [];
+            rows.forEach(function(row) {
+                var s = row.querySelector('.sender-tag').innerText;
+                var b = row.querySelector('.text-bubble').innerText;
+                var t = row.querySelector('.timestamp-span').innerText;
+                scriptArray.push('Time: ' + t + ' | ' + s + ': ' + b + '\n');
+            });
+            var transcriptText = scriptArray.join('');
+            var dataBlob = new Blob([transcriptText], { type: 'text/plain;charset=utf-8' });
+            var downloadLink = document.createElement('a');
+            downloadLink.href = URL.createObjectURL(dataBlob);
+            downloadLink.download = 'Chat-Transcript.txt';
+            downloadLink.click();
+        }
+    </script>
+</body>
+</html>
